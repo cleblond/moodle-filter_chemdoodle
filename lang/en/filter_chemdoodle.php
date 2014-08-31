@@ -1,14 +1,32 @@
-<?php // $Id: filter_chemdoodle.php,v 1.2 2010/08/06 00:18:12 geoffr Exp $
-// Language string for filter/chemdoodle.
- 
+<?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * easyomechjs question type version information.
+ *
+ * @package    filter
+ * @subpackage chemdoodle
+ * @copyright  2014 onwards Carl LeBlond
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 $string['filtername'] = 'chemdoodle';
-$string['antialias'] = 'Antialias';
-$string['atoms'] = 'Atoms';
-$string['spin'] = 'Spin';
-$string['download'] = 'Download';
-$string['off'] = 'off';
-$string['unitcell'] = 'Unit Cell';
-$string['cartoon'] = 'Cartoon';
-$string['backbone'] = 'Backbone';
-$string['dwnlstructfile'] = 'Download the $a structure data file';
-$string['jsdisabled'] = 'The 3D viewer uses JavaScript to create the Java viewing window. If you are unable to make use of this technology, you can use the \"download\" link to download the file. If you are still unable to make use of the information, contact your teacher.';
+$string['infodual'] = '<p><b>In the Yellow window <u>Zoom In:</u> click+drag  <u>Zoom Out:</u> double-click <u>Slide:</u> shift+drag <u>Scale:</u> scroll (mousewheel)</p><p>In the Green spectrum place mouse pointer over spectrum to read values.</b></p>';
+$string['infoperspective'] = '<p><b>Zoom In:</b> click+drag  <b>Zoom Out:</b> double-click <b>Slide:</b> shift+drag <b>Scale:</b> scroll (mousewheel)</p>';
+$string['infoseeker'] = "<p><b>Note: Place mouse pointer over spectra to read value!</b></p>";
+
+
+
