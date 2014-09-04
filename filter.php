@@ -24,8 +24,42 @@
  */
 
 class filter_chemdoodle extends moodle_text_filter {
+
+    public function setup($page, $context) {
+        global $CFG;
+        
+        // This only requires execution once per request.
+        static $cdinitialised = false;
+
+        if (empty($cdinitialised)) {
+
+/*
+	    $url= '/filter/chemdoodle/module.js';
+            $url = new moodle_url($url);
+            $moduleconfig = array(
+                'name' => 'jsmol',
+                'fullpath' => $url
+            );
+           $page->requires->js_module($moduleconfig);
+*/
+
+            $u = $CFG->wwwroot;
+            $newtext = '';
+            $newtext = '
+            <link rel="stylesheet" href="/chemdoodle/ChemDoodleWeb.css\" type="text/css" />
+            <script src="' . $u . '/filter/chemdoodle/cwc/ChemDoodleWeb-libs.js" type="text/javascript"></script>
+            <script src="' . $u . '/filter/chemdoodle/cwc/ChemDoodleWeb.js" type="text/javascript"></script>
+            <script src="' . $u . '/filter/chemdoodle/cwc/sketcher/ChemDoodleWeb-sketcher.js" type="text/javascript"></script>
+            <script src="' . $u . '/filter/chemdoodle/module.js" type="text/javascript"></script>
+';
+
+        $cdinitialised = true;
+        }
+        echo $newtext;
+    }
+
     public function filter($text, array $options = array()) {
-        global $CFG, $chemdoodlehasbeeninitialized;
+        global $CFG;
         $u = $CFG->wwwroot;
         if (preg_match('|https?://.*?/|', $u)) {
             $relurl = preg_replace('|https?://.*?/|', '', $u);
@@ -151,33 +185,7 @@ class filter_chemdoodle extends moodle_text_filter {
     </script>
 ";';
         $newtext          = preg_replace_callback($search, create_function('$matches', $callbackfunction), $text);
-        if (($newtext != $text) && !isset($chemdoodlehasbeeninitialized)) {
-            $chemdoodlehasbeeninitialized = true;
-            $newtext = '
-            <link rel="stylesheet" href="/chemdoodle/ChemDoodleWeb.css\" type="text/css" />
-            <script src="' . $u . '/filter/chemdoodle/cwc/ChemDoodleWeb-libs.js" type="text/javascript"></script>
-            <script src="' . $u . '/filter/chemdoodle/cwc/ChemDoodleWeb.js" type="text/javascript"></script>
-            <script src="' . $u . '/filter/chemdoodle/cwc/sketcher/ChemDoodleWeb-sketcher.js" type="text/javascript"></script>
-            <script src="' . $u . '/filter/chemdoodle/module.js" type="text/javascript"></script>
-' . $newtext;
-            // GR Hack to use popup window for help.php in Moodle 2.0.
-            $newtext = '
-            <script language="javascript" type="text/javascript">
-            function MyCallBack(x, y) {
-            document.getElementById("JSVApplet").addHighlight(x-0.1, x+0.1,241,111,171,200);
-            alert("x: "+x+" y: "+y);
-            }
-            function RevPlot() {
-            document.getElementById("JSVApplet").reversePlot();
-            }
-            function GridToggle() {
-            document.getElementById("JSVApplet").toggleGrid();
-            }
-            function RemoveHighlights() {
-            document.getElementById("JSVApplet").removeAllHighlights();
-            }
-            </script>' . $newtext;
-        }
+       
         return $newtext;
     }
 }

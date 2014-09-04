@@ -56,7 +56,7 @@ Adding ?minx=4&maxx=6 will adjust the initial x-axis max and min scale of the sp
 
 Integration Line
 
-The integration line can be turned off by adding &int=off at end of URL. By default 
+The integration line can be turned off by adding ?int=off at end of URL. By default 
 the integration is turned on.
 
 The following is an examples illustrate the three possible ChemDoodle canvas options.  
