@@ -68,7 +68,7 @@ function file_get_contents (url, flags, context, offset, maxLen) {
   if ((flagNames & OPTS.FILE_USE_INCLUDE_PATH) && ini.include_path && ini.include_path.local_value) {
     var slash = ini.include_path.local_value.indexOf('/') !== -1 ? '/' : '\\';
     url = ini.include_path.local_value + slash + url;
-  } else if (!/^(https?|file):/.test(url)) {
+  } else if (!/^(https?|file):/.test(url)) { // Allow references within or below the same directory (should fix to allow other relative references or root reference; could make dependent on parse_url())
     href = this.window.location.href;
     pathPos = url.indexOf('/') === 0 ? href.indexOf('/', 8) - 1 : href.lastIndexOf('/');
     url = href.slice(0, pathPos + 1) + url;
@@ -98,8 +98,32 @@ function file_get_contents (url, flags, context, offset, maxLen) {
       if (typeof notification === 'function') {
         // Fix: make work with req.addEventListener if available: https://developer.mozilla.org/En/Using_XMLHttpRequest
         if (0 && req.addEventListener) { // Unimplemented so don't allow to get here
+/*
+          req.addEventListener('progress', updateProgress, false);
+          req.addEventListener('load', transferComplete, false);
+          req.addEventListener('error', transferFailed, false);
+          req.addEventListener('abort', transferCanceled, false);
+          */
         } else {
-          req.onreadystatechange = function (aEvt) { // aEvt has stopPropagation(), preventDefault(); see https://developer.mozilla.org/en/
+          req.onreadystatechange = function (aEvt) { // aEvt has stopPropagation(), preventDefault(); see https://developer.mozilla.org/en/NsIDOMEvent
+            // Other XMLHttpRequest properties: multipart, responseXML, status, statusText, upload, withCredentials
+/*
+  PHP Constants:
+  STREAM_NOTIFY_RESOLVE   1       A remote address required for this stream has been resolved, or the resolution failed. See severity  for an indication of which happened.
+  STREAM_NOTIFY_CONNECT   2     A connection with an external resource has been established.
+  STREAM_NOTIFY_AUTH_REQUIRED 3     Additional authorization is required to access the specified resource. Typical issued with severity level of STREAM_NOTIFY_SEVERITY_ERR.
+  STREAM_NOTIFY_MIME_TYPE_IS  4     The mime-type of resource has been identified, refer to message for a description of the discovered type.
+  STREAM_NOTIFY_FILE_SIZE_IS  5     The size of the resource has been discovered.
+  STREAM_NOTIFY_REDIRECTED    6     The external resource has redirected the stream to an alternate location. Refer to message .
+  STREAM_NOTIFY_PROGRESS  7     Indicates current progress of the stream transfer in bytes_transferred and possibly bytes_max as well.
+  STREAM_NOTIFY_COMPLETED 8     There is no more data available on the stream.
+  STREAM_NOTIFY_FAILURE   9     A generic error occurred on the stream, consult message and message_code for details.
+  STREAM_NOTIFY_AUTH_RESULT   10     Authorization has been completed (with or without success).
+
+  STREAM_NOTIFY_SEVERITY_INFO 0     Normal, non-error related, notification.
+  STREAM_NOTIFY_SEVERITY_WARN 1     Non critical error condition. Processing may continue.
+  STREAM_NOTIFY_SEVERITY_ERR  2     A critical error occurred. Processing cannot continue.
+  */
             var objContext = {
               responseText: req.responseText,
               responseXML: req.responseXML,
@@ -108,7 +132,8 @@ function file_get_contents (url, flags, context, offset, maxLen) {
               readyState: req.readyState,
               evt: aEvt
             }; // properties are not available in PHP, but offered on notification via 'this' for convenience
-
+            // notification args: notification_code, severity, message, message_code, bytes_transferred, bytes_max (all int's except string 'message')
+            // Need to add message, etc.
             var bytes_transferred;
             switch (req.readyState) {
             case 0:
@@ -166,6 +191,14 @@ function file_get_contents (url, flags, context, offset, maxLen) {
         }
       }
       content = http_options.content || null;
+/*
+      // Presently unimplemented HTTP context options
+      var request_fulluri = http_options.request_fulluri || false; // When set to TRUE, the entire URI will be used when constructing the request. (i.e. GET http://www.example.com/path/to/file.html HTTP/1.0). While this is a non-standard request format, some proxy servers require it.
+      var max_redirects = http_options.max_redirects || 20; // The max number of redirects to follow. Value 1 or less means that no redirects are followed.
+      var protocol_version = http_options.protocol_version || 1.0; // HTTP protocol version
+      var timeout = http_options.timeout || (ini.default_socket_timeout && ini.default_socket_timeout.local_value); // Read timeout in seconds, specified by a float
+      var ignore_errors = http_options.ignore_errors || false; // Fetch the content even on failure status codes.
+      */
     }
 
     if (flagNames & OPTS.FILE_TEXT) { // Overrides how encoding is treated (regardless of what is returned from the server)
@@ -184,8 +217,12 @@ function file_get_contents (url, flags, context, offset, maxLen) {
       }
       req.overrideMimeType(content_type);
     }
+    // Default is FILE_BINARY, but for binary, we apparently deviate from PHP in requiring the flag, since many if not
+    //     most people will also want a way to have it be auto-converted into native JavaScript text instead
     else if (flagNames & OPTS.FILE_BINARY) { // Trick at https://developer.mozilla.org/En/Using_XMLHttpRequest to get binary
       req.overrideMimeType('text/plain; charset=x-user-defined');
+      // Getting an individual byte then requires:
+      // responseText.charCodeAt(x) & 0xFF; // throw away high-order byte (f7) where x is 0 to responseText.length-1 (see notes in our substr())
     }
 
     if (http_options && http_options['phpjs.sendAsBinary']) { // For content sent in a POST or PUT request (use with file_put_contents()?)
@@ -219,3 +256,4 @@ function file_get_contents (url, flags, context, offset, maxLen) {
   }
   return false;
 }
+
